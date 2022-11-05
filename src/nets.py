@@ -57,3 +57,5 @@ class CIFAR10Cnn(nn.Module):
         out = torch.flatten(out, 1)
         
         out = self.fc1(out)
+        return out
+    
