@@ -20,7 +20,7 @@ class LinearFashionMNIST(nn.Module):
 
 
 class CIFAR10Cnn(nn.Module):
-    def __init__(self, num_outputs):
+    def __init__(self, num_classes):
         super().__init__()
         self.conv1 = nn.Conv2d(3,6,5)
         self.norm1 = nn.BatchNorm2d(6)

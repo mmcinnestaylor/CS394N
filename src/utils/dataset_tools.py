@@ -1,4 +1,6 @@
 import numpy as np
+from torch import utils.data.Subset
+
 
 
 def create_index_arrays(dataset, indices=[]):
@@ -28,3 +30,10 @@ def create_index_arrays(dataset, indices=[]):
             included.append(idx)
 
     return np.array(included), np.array(excluded)
+
+
+def split_training_data(training_data, indices=[]):
+    included, excluded = create_index_arrays(training_data, indices)
+    incl_set = Subset(training_data, included)
+    excl_set = Subset(training_data, excluded)
+    return incl_set, excl_set
