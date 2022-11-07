@@ -19,6 +19,8 @@ class LinearFashionMNIST(nn.Module):
     return logits
 
 
+# TODO: add L2 regularization for CIFAR10
+
 class CIFAR10Cnn(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
