@@ -26,19 +26,22 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device)
 
+        optimizer.zero_grad()
+        
         # Compute prediction error
         pred = model(X)
-        loss = loss_fn(pred, y)
 
         # Backpropagation
-        optimizer.zero_grad()
+        
+        loss = loss_fn(pred, y)
+        
         loss.backward()
         optimizer.step()
 
         # Append lists
         train_loss += loss.item()
 
-        if batch % 100 == 0:
+        if batch % 1000 == 0:
             loss, current = loss.item(), batch * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 

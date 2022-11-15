@@ -1,3 +1,4 @@
+import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -20,9 +21,10 @@ class LinearFashionMNIST(nn.Module):
 
 
 # TODO: add L2 regularization for CIFAR10
-
+# changing kernel size to 2 -- why was it set to 5? 
 class CIFAR10Cnn(nn.Module):
     def __init__(self, num_classes):
+        self.num_classes = num_classes
         super().__init__()
         self.conv1 = nn.Conv2d(3,6,5)
         self.norm1 = nn.BatchNorm2d(6)
@@ -39,23 +41,28 @@ class CIFAR10Cnn(nn.Module):
         self.conv6 = nn.Conv2d(128,256,5)
         self.norm6 = nn.BatchNorm2d(256)
         
-        self.pool = nn.MaxPool2d(2,2)
+        self.pool = nn.MaxPool2d((5,5))
+        #self.pool2 = nn.MaxPool2d((5,5))
         
-        self.fc1 = nn.Linear(256, num_classes)
+        self.fc1 = nn.Linear(1024, self.num_classes)
         
     def forward(self, x):
-        out = F.relu(self.conv1(x))
-        out = F.relu(self.conv2(out))
+        out = F.relu(self.norm1(self.conv1(x)))
+        print(out.shape)
+        out = F.relu(self.norm2(self.conv2(out)))
+        print(out.shape)
         out = self.pool(out)
+        print(out.shape)
         
-        out = F.relu(self.conv3(out))
-        out = F.relu(self.conv4(out))
+        out = F.relu(self.norm3(self.conv3(out)))
+        out = F.relu(self.norm4(self.conv4(out)))
         out = self.pool(out)
+        print(out.shape)
         
-        out = F.relu(self.conv5(out))
-        out = F.relu(self.conv6(out))
+        out = F.relu(self.norm5(self.conv5(out)))
+        out = F.relu(self.norm6(self.conv6(out)))
         out = self.pool(out)
-        
+
         out = torch.flatten(out, 1)
         
         out = self.fc1(out)
