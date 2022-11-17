@@ -4,14 +4,14 @@ import torch.nn.functional as F
 
 
 class LinearFashionMNIST(nn.Module):
-  def __init__(self):
+  def __init__(self, num_classes : int):
     super(LinearFashionMNIST, self).__init__()
 
     self.flatten = nn.Flatten()
   
     self.linear_stack = nn.Sequential(
         nn.Linear(28*28, 128),
-        nn.Linear(128, 8)
+        nn.Linear(128, num_classes)
     )
 
   def forward(self, x):
@@ -23,7 +23,7 @@ class LinearFashionMNIST(nn.Module):
 # TODO: add L2 regularization for CIFAR10
 # changing kernel size to 2 -- why was it set to 5? 
 class CIFAR10Cnn(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes : int):
         self.num_classes = num_classes
         super().__init__()
         self.conv1 = nn.Conv2d(3,6,5)
