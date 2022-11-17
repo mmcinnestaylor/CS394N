@@ -32,7 +32,6 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
         pred = model(X)
 
         # Backpropagation
-        
         loss = loss_fn(pred, y)
         
         loss.backward()
