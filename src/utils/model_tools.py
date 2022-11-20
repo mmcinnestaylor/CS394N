@@ -21,6 +21,7 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
 
     size = len(dataloader.dataset)
     train_loss = 0
+    running_loss = 0.0
 
     model.train()
     for batch, (X, y) in enumerate(dataloader):
@@ -40,9 +41,14 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
         # Append lists
         train_loss += loss.item()
 
-        if batch % 1000 == 0:
-            loss, current = loss.item(), batch * len(X)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+        running_loss += loss.item()
+        if batch % 1000 == 0:    # print every 2000 mini-batches
+            print(f'[{batch + 1:5d}] loss: {running_loss / 1000:.3f}')
+            running_loss = 0.0
+        
+        #if batch % 1000 == 0:
+        #    loss, current = loss.item(), batch * len(X)
+        #    print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
     return train_loss/len(dataloader)
 
