@@ -19,6 +19,19 @@ class LinearFashionMNIST(nn.Module):
     logits = self.linear_stack(x)
     return logits
 
+  
+class LinearFashionMNIST_alt(nn.Module):
+  def __init__(self, input_size, num_classes: int):
+    super(LinearFashionMNIST_alt, self).__init__()
+
+    self.flatten = nn.Flatten()
+    self.input_layer = nn.Linear(input_size, 128)
+    self.output_layer = nn.Linear(128, num_classes)
+
+  def forward(self, x):
+    x = self.flatten(x)
+    return self.output_layer(self.input_layer(x))
+
 
 # TODO: add L2 regularization for CIFAR10
 # changing kernel size to 2 -- why was it set to 5? 
