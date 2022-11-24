@@ -1,5 +1,8 @@
 import torch
 
+import utils.nets as nets
+from utils.exceptions import ArchitectureError
+
 
 def train(dataloader, model, loss_fn, optimizer, device) -> float:
     '''
@@ -85,3 +88,41 @@ def test(dataloader, model, loss_fn, device) -> float:
         f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
     return test_loss
+
+
+def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torch.nn.Module:
+    '''
+        TODO: Add func and sig description.
+    '''
+
+    ckpt = torch.load(ckpt)
+
+    if arch == 'linear':
+        # new part of weight matrix
+        new_weights = torch.randn(
+            num_new_outputs, ckpt['output_layer.weight'].shape[1])
+        # new part of bias vector
+        new_biases = torch.randn(num_new_outputs)
+
+        # updated output layer weights
+        ckpt['output_layer.weight'] = torch.cat(
+            [ckpt['output_layer.weight'], new_weights], dim=0)
+        # updated output layer biases
+        ckpt['output_layer.bias'] = torch.cat(
+            [ckpt['output_layer.bias'], new_biases], dim=0)
+
+        # updated class total
+        num_outputs = ckpt['output_layer.weight'].shape[0]
+        # flattened image size
+        input_size = ckpt['input_layer.weight'].shape[1]
+
+        new_model = nets.LinearFashionMNIST_alt(input_size, num_outputs)
+        new_model.load_state_dict(ckpt)
+    elif arch =='cnn':
+        new_model = nets.CIFAR10Cnn(num_outputs)
+    elif arch == 'vgg':
+        pass
+    else:
+        raise ArchitectureError(arch)
+
+    return new_model
