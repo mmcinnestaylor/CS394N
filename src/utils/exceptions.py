@@ -4,4 +4,4 @@ class ArchitectureError(Exception):
         self.arch = arch
 
     def __str__(self):
-        return f'The architecture {self.arch} is not a valid model.'
+        return f"The architecture '{self.arch}' is not a valid model."
