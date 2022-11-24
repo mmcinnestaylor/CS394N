@@ -14,7 +14,7 @@ RUN pip install --quiet --no-cache-dir --upgrade pip
 
 COPY requirements.txt /tmp/requirements.txt
 
-RUN pip install --quiet --no-cache-dir -r /tmp/requirements.txt && \
+RUN pip install --no-cache-dir -r /tmp/requirements.txt && \
 	rm -rf /tmp/requirements.txt && \
 	fix-permissions "${CONDA_DIR}" && \
 	fix-permissions "/home/${NB_USER}"
