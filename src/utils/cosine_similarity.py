@@ -5,6 +5,13 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 import numpy as np
 import math
 
+
+
+def compute_similarity(a, b) -> float:
+    d = 1 - np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+    return 1/(1 + math.exp(d))
+
+
 def get_similarity_mat(avg_actives):
     '''
     l = len(avg_actives)
