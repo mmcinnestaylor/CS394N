@@ -13,6 +13,7 @@ def compute_similarity(a, b) -> float:
 
 
 def get_similarity_mat(avg_actives):
+    
     '''
     l = len(avg_actives)
     d = lambda vi, vj : 1 - (np.dot(vi, vj)/(np.linalg.norm(vi) * np.linalg.norm(vj)))
@@ -35,9 +36,7 @@ def get_similarity_mat(avg_actives):
 
     
 
-def get_lda_avgs(model: nn.Module, dl: DataLoader, base_idx: [], new_idx: int):
-    X, y, subset_size = extract_features(model, dl, base_idx, new_idx)
-    
+def get_lda_avgs(X, y, subset_size):
     trans_act = LinearDiscriminantAnalysis().fit_transform(X,y)
     
     # group the data by classes and get avg class activation
@@ -55,7 +54,6 @@ def get_lda_avgs(model: nn.Module, dl: DataLoader, base_idx: [], new_idx: int):
 def extract_features(model: nn.Module, dl: DataLoader, base_idx: [], new_idx: int):
     X = []
     y = []
-    
     class_subsets, subset_size = generate_dls(dl, base_idx + [new_idx])
 
     # Yeah I know this is probably a dumb way to do this what can I say
@@ -63,14 +61,14 @@ def extract_features(model: nn.Module, dl: DataLoader, base_idx: [], new_idx: in
         for img, c in class_subsets[class_idx]:
             with torch.no_grad():
                 feature = model(img)
-            X.append(feature.numpy().reshape(-1))
+            X.append(feature['input_layer'].numpy().flatten())
             y.append(class_idx)
 
     for img, c in class_subsets[new_idx]:
         with torch.no_grad():
             feature = model(img)
             
-        X.append(feature.numpy().reshape(-1))
+        X.append(feature['input_layer'].numpy().flatten())
         y.append(new_idx)
     
     return np.array(X), np.array(y), subset_size
