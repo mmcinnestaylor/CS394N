@@ -12,27 +12,27 @@ def compute_similarity(a, b) -> float:
     return 1/(1 + math.exp(d))
 
 
-def get_similarity_mat(avg_actives):
-    
-    '''
-    l = len(avg_actives)
+def get_similarity_vec(avgs):
+    l = len(avgs) - 1
+
     d = lambda vi, vj : 1 - (np.dot(vi, vj)/(np.linalg.norm(vi) * np.linalg.norm(vj)))
-    s = lambda vi, vj : 1 / (1 + exp(d(vi,vj)))
+    s = lambda vi, vj : 1 / (1 + math.exp(d(vi,vj)))
     
-    sim_mat = [[] * l] * l # how do I do this in numpy?
-    
-    for i in range(l): # + 1?
-        for j in range(l):
-            if i == j:
-                sim_mat[i][j] = 0
-            else:
-                summ = 0
-                summ = summ + s(avg_actives[i], avg_actives[k]) for k in range(j, len(avg_actives))
-                sim_mat[i][j] = s(avg_actives[i], avg_actives[j]) / summ
-    
-    return sim_mat
-    '''
-    return
+    sims = []
+
+    for i in range(l):
+        sims.append(s(avgs[l], avgs[i]))
+        
+    # in the paper, they normalize over the similarity scores for the rest of the classes
+    # however I don't think this is necessary since it looks like they're just doing this
+    # for the sake of the visualization. If we encounter problems later, it's worth taking
+    # a look at this again. However rn, it messes it up, and says "t-shirt" is most similar
+    # to ankle boot, whereas if we don't normalize, we get sneaker=boot which is right
+
+    # for i in range(l):
+    #    sims[i] = sims[i] / sum(sims, i+1)
+        
+    return sims
 
     
 
@@ -51,38 +51,31 @@ def get_lda_avgs(X, y, subset_size):
     return avgs
     
 
-def extract_features(model: nn.Module, dl: DataLoader, base_idx: [], new_idx: int):
+def extract_features(model: nn.Module, classes, class_subsets, subset_size):
     X = []
     y = []
-    class_subsets, subset_size = generate_dls(dl, base_idx + [new_idx])
 
-    # Yeah I know this is probably a dumb way to do this what can I say
-    for class_idx in base_idx:
-        for img, c in class_subsets[class_idx]:
+    for i in range(len(classes)):
+        for img, c in class_subsets[i]:
             with torch.no_grad():
                 feature = model(img)
             X.append(feature['input_layer'].numpy().flatten())
-            y.append(class_idx)
-
-    for img, c in class_subsets[new_idx]:
-        with torch.no_grad():
-            feature = model(img)
-            
-        X.append(feature['input_layer'].numpy().flatten())
-        y.append(new_idx)
+            y.append(classes[i])
     
     return np.array(X), np.array(y), subset_size
     
 
 def generate_dls(dl : DataLoader, classes: []): 
     class_subsets = []
+    classes_idxs = []
 
     for class_idx in classes:
         # Struggling to work with our subsets, this works faster
         classes_idx = np.where((np.array(dl.targets) == class_idx))[0]
         class_subset = torch.utils.data.Subset(dl, classes_idx)
         class_subsets.append(class_subset)
+        classes_idxs.append(classes_idx)
         
     subset_size = len(classes_idx)
     
-    return class_subsets, subset_size
+    return class_subsets, classes_idxs, subset_size

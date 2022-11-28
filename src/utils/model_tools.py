@@ -4,7 +4,7 @@ import utils.nets as nets
 from utils.exceptions import ArchitectureError
 
 
-def train(dataloader, model, loss_fn, optimizer, device) -> float:
+def train(dataloader, model, loss_fn, optimizer, device, swap=False, swap_labels=[]) -> float:
     '''
         Model training loop. Performs a single epoch of model updates.
         
@@ -27,6 +27,10 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
 
     model.train()
     for batch, (X, y) in enumerate(dataloader):
+        if swap:
+            for i in range(len(y)):
+                if y[i] == swap_labels[0]:
+                    y[i] = swap_labels[1]
         X, y = X.to(device), y.to(device)
 
         optimizer.zero_grad()
@@ -51,7 +55,7 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
     return train_loss/len(dataloader)
 
 
-def test(dataloader, model, loss_fn, device) -> float:
+def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[]) -> float:
     '''
         Model test loop. Performs a single epoch of model updates.
 
@@ -76,6 +80,10 @@ def test(dataloader, model, loss_fn, device) -> float:
     model.eval()
     with torch.no_grad():
         for X, y in dataloader:
+            if swap:
+                for i in range(len(y)):
+                    if y[i] == swap_labels[0]:
+                        y[i] = swap_labels[1]
             X, y = X.to(device), y.to(device)
             pred = model(X)
             test_loss += loss_fn(pred, y).item()
@@ -115,6 +123,9 @@ def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torc
         num_outputs = ckpt['output_layer.weight'].shape[0]
         # flattened image size
         input_size = ckpt['input_layer.weight'].shape[1]
+        
+        print("input_size", input_size)
+        print("num_outputs", num_outputs)
 
         new_model = nets.LinearFashionMNIST_alt(input_size, num_outputs)
         new_model.load_state_dict(ckpt)
