@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "7156a60bb09669016c694e90f4394a3c89566d9317171d31a9ed8946db260bfe"
+            "sha256": "abd82bf46f48bee15de57ebcff20caf90efa1237388a9012e0e8b0bffe8a3fe7"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -490,6 +490,14 @@
             "index": "pypi",
             "version": "==1.13.0"
         },
+        "torchmetrics": {
+            "hashes": [
+                "sha256:9e6ab66175f2dc13e246c37485b2c27c77931dfe47fc2b81c76217b8efdc1e57",
+                "sha256:b12cf92897545e24a825b0d168888c0f3052700c2901e2d4f7d90b252bc4a343"
+            ],
+            "index": "pypi",
+            "version": "==0.10.3"
+        },
         "torchvision": {
             "hashes": [
                 "sha256:0123d0280c547aa9766954928b1ab9af2125a8861f53af23c07e56aeef0f2520",
@@ -525,11 +533,11 @@
         },
         "urllib3": {
             "hashes": [
-                "sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e",
-                "sha256:b930dd878d5a8afb066a637fbb35144fe7901e3b209d1cd4f524bd0e9deee997"
+                "sha256:47cc05d99aaa09c9e72ed5809b60e7ba354e64b59c9c173ac3018642d8bb41fc",
+                "sha256:c083dd0dce68dbfbe1129d5271cb90f9447dea7d52097c6e0126120c521ddea8"
             ],
-            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5' and python_version < '4'",
-            "version": "==1.26.12"
+            "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
+            "version": "==1.26.13"
         }
     },
     "develop": {}
