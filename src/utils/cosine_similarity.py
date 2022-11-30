@@ -79,3 +79,48 @@ def generate_dls(dl : DataLoader, classes: []):
     subset_size = len(classes_idx)
     
     return class_subsets, classes_idxs, subset_size
+
+
+def get_avg_activations(model, dataset, classes, layer, device, batch_size=32) -> np.array:
+    feature_extractor = FeatureExtractor(model, layers=layer).to(device)
+    targets = np.array(dataset.targets)
+    # Stores late layer activations
+    X = torch.Tensor().to(device)
+    # Stores activation labels
+    y = None
+
+    with torch.no_grad():
+        for cls in classes:
+
+            # Empty container to store batch activations
+            class_activations = torch.Tensor().to(device)
+            # Index array of class items
+            idx = np.where(targets == cls)[0]
+            #Create Dataloader with clss data
+            cls_data = torch.Tensor(dataset.data[idx]).to(device)
+            cls_data_loader = torch.utils.data.DataLoader(
+                cls_data, batch_size=batch_size)
+
+            # Iterate over class data
+            for batch in cls_data_loader:
+                # Reshape batch for feature extractor
+                imgs = batch.permute(0, 3, 1, 2).to(device)
+                # Late layer activations for batch data
+                batch_activations = feature_extractor(imgs)
+                # Add batch activations to class activation tensor
+                class_activations = torch.cat(
+                    (class_activations, batch_activations[layer[0]]), dim=0)
+
+                # Append batch's labels to the label array
+                labels = np.full((len(batch)), cls)
+                if y is not None:
+                    y = np.concatenate((y, labels))
+                else:
+                    y = labels
+
+            # Get average activation for entire class
+            #avg_activations.append(np.mean(class_activations.numpy(), axis=0))
+            X = torch.cat((X, class_activations), dim=0)
+
+    # Return per class average activation avg from LDA space
+    return get_lda_avgs(X.numpy(), y, len(y)/len(classes))
