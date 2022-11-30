@@ -143,6 +143,25 @@ def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torc
         new_model.load_state_dict(ckpt)
     elif arch =='cnn':
         new_model = nets.CIFAR10Cnn(num_outputs)
+    elif arch == 'cnn-demo':
+        # new part of weight matrix
+        new_weights = torch.randn(
+            num_new_outputs, ckpt['fc3.weight'].shape[1])
+        # new part of bias vector
+        new_biases = torch.randn(num_new_outputs)
+
+        # updated output layer weights
+        ckpt['fc3.weight'] = torch.cat(
+            [ckpt['fc3.weight'], new_weights], dim=0)
+        # updated output layer biases
+        ckpt['fc3.bias'] = torch.cat(
+            [ckpt['fc3.bias'], new_biases], dim=0)
+
+        # updated class total
+        num_outputs = ckpt['fc3.weight'].shape[0]
+
+        new_model = nets.CNN_demo(num_outputs)
+        new_model.load_state_dict(ckpt)
     elif arch == 'vgg':
         pass
     else:
