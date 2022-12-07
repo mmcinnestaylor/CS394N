@@ -6,7 +6,6 @@ import numpy as np
 import math
 
 
-
 def compute_similarity(a, b) -> float:
     d = 1 - np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
     return 1/(1 + math.exp(d))
@@ -22,7 +21,7 @@ def get_similarity_vec(avgs):
 
     for i in range(l):
         sims.append(s(avgs[l], avgs[i]))
-        
+    
     # in the paper, they normalize over the similarity scores for the rest of the classes
     # however I don't think this is necessary since it looks like they're just doing this
     # for the sake of the visualization. If we encounter problems later, it's worth taking
@@ -34,7 +33,6 @@ def get_similarity_vec(avgs):
         
     return sims
 
-    
 
 def get_lda_avgs(X, y, subset_size):
     trans_act = LinearDiscriminantAnalysis().fit_transform(X,y)
