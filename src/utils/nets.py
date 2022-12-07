@@ -82,6 +82,68 @@ class CIFAR10Cnn(nn.Module):
         return out
     
 
+# TODO: add L2 regularization for CIFAR10
+# changing kernel size to 2 -- why was it set to 5?
+class CNN_6L(nn.Module):
+    def __init__(self, num_classes: int, input_channels=3):
+        super(CNN_6L, self).__init__()
+        self.num_classes = num_classes
+        
+        '''Convolutional Block 1'''
+        self.conv_block1 = nn.Sequential()
+        # First Convolution
+        self.conv_block1.add_module("Conv1", nn.Conv2d(
+            in_channels=input_channels, out_channels=16, kernel_size=3))
+        self.conv_block1.add_module("BN1", nn.BatchNorm2d(num_features=16))
+        self.conv_block1.add_module("Relu1", nn.ReLU())
+        # Second Convolution
+        self.conv_block1.add_module("Conv2", nn.Conv2d(
+            in_channels=16, out_channels=16, kernel_size=3))
+        self.conv_block1.add_module("BN2", nn.BatchNorm2d(num_features=16))
+        self.conv_block1.add_module("Relu2", nn.ReLU())
+        self.conv_block1.add_module("Pool1", nn.MaxPool2d((2, 2)))
+
+        '''Convolutional Block 2'''
+        self.conv_block2 = nn.Sequential()
+        # Third Convolution
+        self.conv_block2.add_module("Conv3", nn.Conv2d(
+            in_channels=16, out_channels=32, kernel_size=3))
+        self.conv_block2.add_module("BN3", nn.BatchNorm2d(num_features=32))
+        self.conv_block2.add_module("Relu3", nn.ReLU())
+        # Fourth Convolution
+        self.conv_block2.add_module("Conv4", nn.Conv2d(
+            in_channels=32, out_channels=32, kernel_size=3))
+        self.conv_block2.add_module("BN4", nn.BatchNorm2d(num_features=32))
+        self.conv_block2.add_module("Relu4", nn.ReLU())
+        self.conv_block2.add_module("Pool2", nn.MaxPool2d((2, 2)))
+
+        '''Convolutional Block 3'''
+        self.conv_block3 = nn.Sequential()
+        # Third Convolution
+        self.conv_block3.add_module("Conv5", nn.Conv2d(
+            in_channels=32, out_channels=64, kernel_size=3))
+        self.conv_block3.add_module("BN5", nn.BatchNorm2d(num_features=64))
+        self.conv_block3.add_module("Relu5", nn.ReLU())
+        # Fourth Convolution
+        self.conv_block3.add_module("Conv6", nn.Conv2d(
+            in_channels=64, out_channels=64, kernel_size=3))
+        self.conv_block3.add_module("BN6", nn.BatchNorm2d(num_features=64))
+        self.conv_block3.add_module("Relu6", nn.ReLU())
+        self.conv_block3.add_module("Pool3", nn.MaxPool2d((2, 2)))
+        
+        # Output Layer
+        self.fc1 = nn.Linear(1024, self.num_classes)
+
+    def forward(self, x):
+        x = self.conv_block1(x)
+        x = self.conv_block2(x)
+        x = self.conv_block3(x)
+        #x = x.view(-1, 32 * 16 * 16)
+        x = self.fc1(x)
+
+        return x
+
+
 class CNN_demo(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
