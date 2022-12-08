@@ -39,45 +39,38 @@ class CIFAR10Cnn(nn.Module):
     def __init__(self, num_classes : int):
         self.num_classes = num_classes
         super().__init__()
-        self.conv1 = nn.Conv2d(3,6,5)
+        self.conv1 = nn.Conv2d(3,6,5,padding = 'same')
         self.norm1 = nn.BatchNorm2d(6)
-        self.conv2 = nn.Conv2d(6,16,5)
+        self.conv2 = nn.Conv2d(6,16,5,padding = 'same')
         self.norm2 = nn.BatchNorm2d(16)
         
-        self.conv3 = nn.Conv2d(16,32,5)
+        self.conv3 = nn.Conv2d(16,32,5,padding = 'same')
         self.norm3 = nn.BatchNorm2d(32)
-        self.conv4 = nn.Conv2d(32,64,5)
+        self.conv4 = nn.Conv2d(32,64,5,padding = 'same')
         self.norm4 = nn.BatchNorm2d(64)
         
-        self.conv5 = nn.Conv2d(64,128,5)
+        self.conv5 = nn.Conv2d(64,128,5,padding = 'same')
         self.norm5 = nn.BatchNorm2d(128)
-        self.conv6 = nn.Conv2d(128,256,5)
+        self.conv6 = nn.Conv2d(128,256,5,padding = 'same')
         self.norm6 = nn.BatchNorm2d(256)
         
-        self.pool = nn.MaxPool2d((5,5))
-        #self.pool2 = nn.MaxPool2d((5,5))
+        self.pool = nn.MaxPool2d(2,2)
         
-        self.fc1 = nn.Linear(1024, self.num_classes)
+        self.fc1 = nn.Linear(4096, 10)
         
     def forward(self, x):
         out = F.relu(self.norm1(self.conv1(x)))
-        print(out.shape)
         out = F.relu(self.norm2(self.conv2(out)))
-        print(out.shape)
         out = self.pool(out)
-        print(out.shape)
-        
         out = F.relu(self.norm3(self.conv3(out)))
         out = F.relu(self.norm4(self.conv4(out)))
         out = self.pool(out)
-        print(out.shape)
         
         out = F.relu(self.norm5(self.conv5(out)))
         out = F.relu(self.norm6(self.conv6(out)))
         out = self.pool(out)
 
-        out = torch.flatten(out, 1)
-        
+        out = torch.flatten(out,1)
         out = self.fc1(out)
         return out
     
