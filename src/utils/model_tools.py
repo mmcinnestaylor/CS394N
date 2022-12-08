@@ -4,7 +4,7 @@ import utils.nets as nets
 from utils.exceptions import ArchitectureError
 
 import torchmetrics
-from torchmetrics import Recall
+from torchmetrics.classification import MulticlassRecall
 
 
 def train(dataloader, model, loss_fn, optimizer, device, swap=False, swap_labels=[]) -> float:
@@ -79,7 +79,7 @@ def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[], classes
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     test_loss, correct = 0, 0
-    preds, targets = [], []
+    y_pred_list, targets = [], []
 
     model.eval()
     with torch.no_grad():
@@ -90,24 +90,26 @@ def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[], classes
                         y[i] = swap_labels[1]
             X, y = X.to(device), y.to(device)
             pred = model(X)
-            preds.append(pred)
-            targets.append(y)
+            #preds.append(pred)
+            targets.append(y.numpy())
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+            
+            _, y_pred_tags = torch.max(pred, dim=1)
+            y_pred_list.append(y_pred_tags.cpu().numpy())
+            
+    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
 
     test_loss /= num_batches
     correct /= size
     
-    #print(preds)
-    print(targets)
-    
-    recall = Recall(average='macro', num_classes=classes)
-    recall_val = recall(torch.FloatTensor(preds), torch.FloatTensor(targets))
+    recall = MulticlassRecall(classes)
+    recall_val = recall(torch.FloatTensor(np.asarray(y_pred_list)), torch.IntTensor(np.asarray(targets)))
 
     print(
-        f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f}, Recall: {recall_val:>8f} \n")
+        f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f}, Recall val: {recall_val:>8f} \n")
 
-    return test_loss
+    return test_loss, np.asarray(y_pred_list), np.asarray(targets)
 
 
 def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torch.nn.Module:
