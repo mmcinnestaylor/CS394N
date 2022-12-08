@@ -170,3 +170,40 @@ def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torc
         raise ArchitectureError(arch)
 
     return new_model
+
+def get_recall_subsets(y_actual: [], y_preds: [], classes: [], total_classes_num: int) -> []:
+    '''
+    Generates recall values per epoch for a subset of classes.
+    
+    * USAGE *
+    Use after training to get recall values (i.e. 'Old similar classes') for plotting improvements over time.
+
+    * PARAMETERS *
+    y_actual: Correct class labels, per batch, per epoch, collected from a test loop
+    y_preds: Class label predictions, per batch, per epoch, collected from a test loop
+    classes: The indices of classes which you would like to get recall values for
+    total_classes_num: The total number of classes your model was trained on
+
+    * RETURNS *
+    list of float: List of recall values with length equal to number of epochs from the train loop
+    '''
+
+    recall_per_epoch = []
+    recall = MulticlassRecall(total_classes_num)
+
+    for e in range(len(y_actual)):
+        y_per_epoch = np.asarray(y_actual[e]).flatten()
+        preds_per_epoch = np.asarray(y_preds[e]).flatten()
+    
+        condition = y_per_epoch == classes[0]
+        for i in range(1, len(classes)):
+            condition |= y_per_epoch == classes[i]
+    
+        target_y = np.extract(condition, y_per_epoch)
+        target_preds = np.extract(condition, preds_per_epoch)
+    
+        recall_val = recall(torch.IntTensor(target_preds), torch.IntTensor(target_y))
+    
+        recall_per_epoch.append(recall_val.item())
+        
+    return recall_per_epoch
