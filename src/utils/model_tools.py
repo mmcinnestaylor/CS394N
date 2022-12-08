@@ -26,7 +26,7 @@ def train(dataloader, model, loss_fn, optimizer, device) -> float:
     model.train()
     for batch, (X, y) in enumerate(dataloader):
         X, y = X.to(device), y.to(device)
-
+        import pdb; pdb.set_trace()
         optimizer.zero_grad()
         
         # Compute prediction error
