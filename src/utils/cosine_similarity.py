@@ -118,6 +118,8 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
                 if len(batch.shape) > 3:
                     # Reshape batch for feature extractor
                     imgs = batch.permute(0, 3, 1, 2).to(device)
+                else:
+                    imgs = batch
                 # Late layer activations for batch data
                 batch_activations = feature_extractor(imgs)
                 # Add batch activations to class activation tensor
