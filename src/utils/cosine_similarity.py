@@ -1,9 +1,12 @@
-from utils.feature_extractor import *
+import math
+import numpy as np
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
 from torch import nn
 from torch.utils.data import DataLoader
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-import numpy as np
-import math
+
+from utils.feature_extractor import *
 
 
 def compute_similarity(a, b) -> float:
@@ -34,19 +37,30 @@ def get_similarity_vec(avgs):
     return sims
 
 
-def get_lda_avgs(X, y, subset_size):
+def get_lda_avgs(X, y, subset_size=None):
+    classes = np.unique(y).tolist()
     trans_act = LinearDiscriminantAnalysis().fit_transform(X,y)
     
     # group the data by classes and get avg class activation
     class_splits_trans = []
 
-    for i in range(1,int(len(trans_act)/subset_size) + 1):
-        idx = subset_size * i
-        class_splits_trans.append(trans_act[idx-subset_size:idx])
+    if subset_size is None:
+        for cls in classes:
+            idx = np.where(y == cls)[0]
+            class_splits_trans.append(np.mean(trans_act[idx], axis=1))
+
+        return class_splits_trans
+    else:
+        for i in range(1,int(len(trans_act)/subset_size) + 1):
+            idx = subset_size * i
+            class_splits_trans.append(trans_act[idx-subset_size:idx])
+        
+        avgs = np.mean(class_splits_trans, axis=1, dtype=np.float64)
+        
+        return avgs
     
-    avgs = np.mean(class_splits_trans, axis=1, dtype=np.float64)
+
     
-    return avgs
     
 
 def extract_features(model: nn.Module, classes, class_subsets, subset_size):
@@ -79,7 +93,7 @@ def generate_dls(dl : DataLoader, classes: []):
     return class_subsets, classes_idxs, subset_size
 
 
-def get_avg_activations(model, dataset, classes, layer, device, batch_size=32) -> np.array:
+def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
     feature_extractor = FeatureExtractor(model, layers=layer).to(device)
     targets = np.array(dataset.targets)
     # Stores late layer activations
@@ -96,7 +110,7 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32) -
             idx = np.where(targets == cls)[0]
             #Create Dataloader with clss data
             cls_data = torch.Tensor(dataset.data[idx]).to(device)
-            cls_data_loader = torch.utils.data.DataLoader(
+            cls_data_loader = DataLoader(
                 cls_data, batch_size=batch_size)
 
             # Iterate over class data
