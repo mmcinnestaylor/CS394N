@@ -4,7 +4,9 @@ import utils.nets as nets
 from utils.exceptions import ArchitectureError
 
 import torchmetrics
-from torchmetrics import Recall
+from torchmetrics.classification import MulticlassRecall
+
+import numpy as np
 
 
 def train(dataloader, model, loss_fn, optimizer, device, swap=False, swap_labels=[]) -> float:
@@ -76,10 +78,12 @@ def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[], classes
         float: The average test loss
     '''
 
+    # TODO: can the swap stuff be removed now?
+    
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
     test_loss, correct = 0, 0
-    preds, targets = [], []
+    y_pred_list, targets = [], []
 
     model.eval()
     with torch.no_grad():
@@ -90,24 +94,25 @@ def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[], classes
                         y[i] = swap_labels[1]
             X, y = X.to(device), y.to(device)
             pred = model(X)
-            preds.append(pred)
-            targets.append(y)
+            targets.append(y.tolist())
             test_loss += loss_fn(pred, y).item()
             correct += (pred.argmax(1) == y).type(torch.float).sum().item()
+            
+            _, y_pred_tags = torch.max(pred, dim=1)
+            y_pred_list.append(y_pred_tags.cpu().numpy())
+            
+    y_pred_list = [a.squeeze().tolist() for a in y_pred_list]
+    y_pred_list = [item for sublist in y_pred_list for item in sublist]
+    
+    targets = [item for sublist in targets for item in sublist]
 
     test_loss /= num_batches
     correct /= size
-    
-    #print(preds)
-    print(targets)
-    
-    recall = Recall(average='macro', num_classes=classes)
-    recall_val = recall(torch.FloatTensor(preds), torch.FloatTensor(targets))
 
     print(
-        f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f}, Recall: {recall_val:>8f} \n")
+        f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
-    return test_loss
+    return test_loss, np.asarray(y_pred_list), np.asarray(targets)
 
 
 def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torch.nn.Module:
@@ -168,3 +173,31 @@ def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torc
         raise ArchitectureError(arch)
 
     return new_model
+
+def get_recall_per_epoch(y_actual: [], y_preds: [], total_classes_num: int) -> []:
+    '''
+    Generates recall values per epoch.
+    
+    * USAGE *
+    Use after training to get recall values for plotting improvements over time.
+
+    * PARAMETERS *
+    y_actual: Correct class labels, per batch, per epoch, collected from a test loop
+    y_preds: Class label predictions, per batch, per epoch, collected from a test loop
+    total_classes_num: The total number of classes your model was trained on
+
+    * RETURNS *
+    list: 2d np array of shape total classes * num epochs
+    '''
+
+    recall_per_epoch = np.zeros([total_classes_num, len(y_actual)])
+    recall = MulticlassRecall(total_classes_num, average=None)
+
+    for i in range(len(y_actual)):
+        y_epoch = np.asarray(y_actual[i]).flatten()
+        yhat_epoch = np.asarray(y_preds[i]).flatten()
+        
+        recall_val = recall(torch.IntTensor(yhat_epoch),torch.IntTensor(y_epoch))
+        recall_per_epoch[:,i] = recall_val
+        
+    return recall_per_epoch
