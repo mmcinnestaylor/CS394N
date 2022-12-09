@@ -47,7 +47,7 @@ def get_lda_avgs(X, y, subset_size=None):
     if subset_size is None:
         for cls in classes:
             idx = np.where(y == cls)[0]
-            class_splits_trans.append(np.mean(trans_act[idx], axis=1))
+            class_splits_trans.append(np.mean(trans_act[idx], axis=0))
 
         return class_splits_trans
     else:
@@ -108,7 +108,7 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
             class_activations = torch.Tensor().to(device)
             # Index array of class items
             idx = np.where(targets == cls)[0]
-            #Create Dataloader with clss data
+            #Create Dataloader with class data
             cls_data = torch.Tensor(dataset.data[idx]).to(device)
             cls_data_loader = DataLoader(
                 cls_data, batch_size=batch_size)
@@ -119,7 +119,7 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
                     # Reshape batch for feature extractor
                     imgs = batch.permute(0, 3, 1, 2).to(device)
                 else:
-                    imgs = batch
+                    imgs = batch.to(device)
                 # Late layer activations for batch data
                 batch_activations = feature_extractor(imgs)
                 # Add batch activations to class activation tensor
