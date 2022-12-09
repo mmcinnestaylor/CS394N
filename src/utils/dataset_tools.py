@@ -77,7 +77,4 @@ def reorder_classes(dataset, new_order):
             np.put(all_targets, old_indices[new_target[0]], old_target)
             new_labels[old_target] = labels[new_target[0]]
 
-    dataset.classes = new_labels
-    dataset.targets = all_targets
-
-    return dataset #all_targets.tolist(), new_labels
+    return all_targets.tolist(), new_labels
