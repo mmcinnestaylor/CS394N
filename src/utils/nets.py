@@ -94,41 +94,41 @@ class CNN_6L(nn.Module):
         # First Convolution
         self.conv_block1.add_module("Conv1", nn.Conv2d(
             in_channels=input_channels, out_channels=16, kernel_size=3))
-        self.conv_block1.add_module("BN1", nn.BatchNorm2d(num_features=16))
         self.conv_block1.add_module("Relu1", nn.ReLU())
+        self.conv_block1.add_module("BN1", nn.BatchNorm2d(num_features=16))
         # Second Convolution
         self.conv_block1.add_module("Conv2", nn.Conv2d(
-            in_channels=16, out_channels=16, kernel_size=3))
-        self.conv_block1.add_module("BN2", nn.BatchNorm2d(num_features=16))
+            in_channels=16, out_channels=16, kernel_size=3, padding=4))
         self.conv_block1.add_module("Relu2", nn.ReLU())
+        self.conv_block1.add_module("BN2", nn.BatchNorm2d(num_features=16))
         self.conv_block1.add_module("Pool1", nn.MaxPool2d((2, 2)))
 
         '''Convolutional Block 2'''
         self.conv_block2 = nn.Sequential()
         # Third Convolution
         self.conv_block2.add_module("Conv3", nn.Conv2d(
-            in_channels=16, out_channels=32, kernel_size=3))
-        self.conv_block2.add_module("BN3", nn.BatchNorm2d(num_features=32))
+            in_channels=16, out_channels=32, kernel_size=3, padding=2))
         self.conv_block2.add_module("Relu3", nn.ReLU())
+        self.conv_block2.add_module("BN3", nn.BatchNorm2d(num_features=32))
         # Fourth Convolution
         self.conv_block2.add_module("Conv4", nn.Conv2d(
-            in_channels=32, out_channels=32, kernel_size=3))
-        self.conv_block2.add_module("BN4", nn.BatchNorm2d(num_features=32))
+            in_channels=32, out_channels=32, kernel_size=3, padding=2))
         self.conv_block2.add_module("Relu4", nn.ReLU())
+        self.conv_block2.add_module("BN4", nn.BatchNorm2d(num_features=32))
         self.conv_block2.add_module("Pool2", nn.MaxPool2d((2, 2)))
 
         '''Convolutional Block 3'''
         self.conv_block3 = nn.Sequential()
         # Third Convolution
         self.conv_block3.add_module("Conv5", nn.Conv2d(
-            in_channels=32, out_channels=64, kernel_size=3))
-        self.conv_block3.add_module("BN5", nn.BatchNorm2d(num_features=64))
+            in_channels=32, out_channels=64, kernel_size=3, padding=1))
         self.conv_block3.add_module("Relu5", nn.ReLU())
+        self.conv_block3.add_module("BN5", nn.BatchNorm2d(num_features=64))
         # Fourth Convolution
         self.conv_block3.add_module("Conv6", nn.Conv2d(
             in_channels=64, out_channels=64, kernel_size=3))
-        self.conv_block3.add_module("BN6", nn.BatchNorm2d(num_features=64))
         self.conv_block3.add_module("Relu6", nn.ReLU())
+        self.conv_block3.add_module("BN6", nn.BatchNorm2d(num_features=64))
         self.conv_block3.add_module("Pool3", nn.MaxPool2d((2, 2)))
         
         # Output Layer
