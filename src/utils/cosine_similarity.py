@@ -13,7 +13,18 @@ def compute_similarity(a, b) -> float:
     d = 1 - np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
     return 1/(1 + math.exp(d))
 
+def compute_similarity_mat(V):
+    dotv = np.dot(V,V.T) #<vi | vj>
+    normv_ = np.linalg.norm(V,2,axis = 1); normv_ = normv_[:,None] #||vi||
+    normv = normv_*normv_.T #||vi|| ||vj||
 
+    dv = 1-dotv/normv #1-<vi|vj>/||vi|| ||vj||
+    s = 1/(1+np.exp(dv)) #1/(1+e^d)
+
+    sm = s/np.sum(s,1) #normalize
+    np.fill_diagonal(sm, math.nan) #remove diag
+    
+    return sm
 def get_similarity_vec(avgs):
     l = len(avgs) - 1
 
@@ -42,15 +53,17 @@ def get_lda_avgs(X, y, subset_size=None):
     trans_act = LinearDiscriminantAnalysis().fit_transform(X,y)
     
     # group the data by classes and get avg class activation
-    class_splits_trans = []
-
     if subset_size is None:
+        class_splits_trans = np.zeros([len(classes),len(trans_act[0])])
+        flag = 0
         for cls in classes:
             idx = np.where(y == cls)[0]
-            class_splits_trans.append(np.mean(trans_act[idx], axis=1))
-
+            class_splits_trans[flag,:] = np.mean(trans_act[idx,:], axis=0)
+            flag += 1
+        
         return class_splits_trans
     else:
+        class_splits_trans = []
         for i in range(1,int(len(trans_act)/subset_size) + 1):
             idx = subset_size * i
             class_splits_trans.append(trans_act[idx-subset_size:idx])
@@ -58,9 +71,6 @@ def get_lda_avgs(X, y, subset_size=None):
         avgs = np.mean(class_splits_trans, axis=1, dtype=np.float64)
         
         return avgs
-    
-
-    
     
 
 def extract_features(model: nn.Module, classes, class_subsets, subset_size):
@@ -100,6 +110,7 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
     X = torch.Tensor().to(device)
     # Stores activation labels
     y = None
+   
 
     with torch.no_grad():
         for cls in classes:
@@ -115,11 +126,13 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
 
             # Iterate over class data
             for batch in cls_data_loader:
+               
                 if len(batch.shape) > 3:
                     # Reshape batch for feature extractor
                     imgs = batch.permute(0, 3, 1, 2).to(device)
                 else:
-                    imgs = batch
+                    batch = batch.to(torch.float32)
+                    imgs = batch.to(device)
                 # Late layer activations for batch data
                 batch_activations = feature_extractor(imgs)
                 # Add batch activations to class activation tensor
@@ -135,7 +148,6 @@ def get_avg_activations(model, dataset, classes, layer, device, batch_size=32):
 
             # Get average activation for entire class
             #avg_activations.append(np.mean(class_activations.numpy(), axis=0))
-            X = torch.cat((X, class_activations), dim=0)
-
+            X = torch.cat((X, torch.flatten(class_activations,1)), dim=0)
     # Return per class average activation avg from LDA space
     return get_lda_avgs(X.numpy(), y)
