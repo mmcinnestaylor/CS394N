@@ -115,12 +115,12 @@ def test(dataloader, model, loss_fn, device, swap=False, swap_labels=[], classes
     return test_loss, np.asarray(y_pred_list), np.asarray(targets)
 
 
-def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torch.nn.Module:
+def add_output_nodes(ckpt:str, device, num_new_outputs:int=1, arch:str='linear') -> torch.nn.Module:
     '''
         TODO: Add func and sig description.
     '''
 
-    ckpt = torch.load(ckpt)
+    ckpt = torch.load(ckpt, map_location=device)
 
     if arch == 'linear':
         # new part of weight matrix
@@ -147,7 +147,24 @@ def add_output_nodes(ckpt:str, num_new_outputs:int=1, arch:str='linear') -> torc
         new_model = nets.LinearFashionMNIST_alt(input_size, num_outputs)
         new_model.load_state_dict(ckpt)
     elif arch =='cnn':
-        new_model = nets.CIFAR10Cnn(num_outputs)
+        # new part of weight matrix
+        new_weights = torch.randn(
+            num_new_outputs, ckpt['fc1.weight'].shape[1])
+        # new part of bias vector
+        new_biases = torch.randn(num_new_outputs)
+
+        # updated output layer weights
+        ckpt['fc1.weight'] = torch.cat(
+            [ckpt['fc1.weight'], new_weights], dim=0)
+        # updated output layer biases
+        ckpt['fc1.bias'] = torch.cat(
+            [ckpt['fc1.bias'], new_biases], dim=0)
+
+        # updated class total
+        num_outputs = ckpt['fc1.weight'].shape[0]
+
+        new_model = nets.CNN_6L(num_outputs)
+        new_model.load_state_dict(ckpt)
     elif arch == 'cnn-demo':
         # new part of weight matrix
         new_weights = torch.randn(

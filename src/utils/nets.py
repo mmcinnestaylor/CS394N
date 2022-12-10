@@ -119,12 +119,12 @@ class CNN_6L(nn.Module):
 
         '''Convolutional Block 3'''
         self.conv_block3 = nn.Sequential()
-        # Third Convolution
+        # Fifth Convolution
         self.conv_block3.add_module("Conv5", nn.Conv2d(
             in_channels=32, out_channels=64, kernel_size=3, padding=1))
         self.conv_block3.add_module("Relu5", nn.ReLU())
         self.conv_block3.add_module("BN5", nn.BatchNorm2d(num_features=64))
-        # Fourth Convolution
+        # Sixth Convolution
         self.conv_block3.add_module("Conv6", nn.Conv2d(
             in_channels=64, out_channels=64, kernel_size=3, padding=1))
         self.conv_block3.add_module("Relu6", nn.ReLU())
@@ -138,7 +138,7 @@ class CNN_6L(nn.Module):
         x = self.conv_block1(x)
         x = self.conv_block2(x)
         x = self.conv_block3(x)
-        x = x.view(-1, 64 * 4 * 4)
+        x = torch.flatten(x, 1)
         x = self.fc1(x)
 
         return x
