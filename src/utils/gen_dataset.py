@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
-import pandas
+import pandas as pd
 
 class GenDataset(Dataset):
     """All-purpose (FMNIST or CIFAR10) generated dataset."""
@@ -17,6 +17,11 @@ class GenDataset(Dataset):
         self.landmarks_frame = pd.read_csv(csv_file)
         self.root_dir = root_dir
         self.transform = transform
+        
+        self.data, self.targets = self._load_data()
+        
+    def load_data(self):
+        print(self.landmarks_frame)
 
     def __len__(self):
         return len(self.landmarks_frame)

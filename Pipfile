@@ -10,6 +10,7 @@ numpy = "*"
 matplotlib = "*"
 scikit-learn = "*"
 torchmetrics = "*"
+pandas = "*"
 
 [dev-packages]
 
