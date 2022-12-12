@@ -13,20 +13,21 @@ from utils.feature_extractor import *
 
 class SyntheticImageDataset(utils.data.Dataset):
     def __init__(self, annotations_file, class_file, img_dir, transform=None, target_transform=None):
-        class_df = pd.read_csv(annotations_file)
+        class_df = pd.read_csv(class_file)
         self.classes = class_df.values.tolist()
-        self.targets = pd.read_csv(annotations_file)
+        self.annotations = pd.read_csv(annotations_file)
+        self.targets = np.array(self.annotations.iloc[:, 1])
         self.img_dir = img_dir
         self.transform = transform
         self.target_transform = target_transform
 
     def __len__(self):
-        return len(self.img_labels)
+        return len(self.targets)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, self.targets.iloc[idx, 0])
+        img_path = os.path.join(self.img_dir, self.annotations.iloc[idx, 0])
         image = read_image(img_path)
-        label = self.targets.iloc[idx, 1]
+        label = self.annotations.iloc[idx, 1]
         if self.transform:
             image = self.transform(image)
         if self.target_transform:
