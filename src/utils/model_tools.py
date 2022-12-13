@@ -30,7 +30,17 @@ def train(dataloader, model, loss_fn, optimizer, device, swap=False, swap_labels
     size = len(dataloader.dataset)
     train_loss = 0
 
-    model.train()
+    #model.train()
+    
+    model.conv_block1.requires_grad_(False)
+    model.conv_block2.requires_grad_(False)
+    model.conv_block3.Conv5.requires_grad_(False)
+    model.conv_block3.Relu5.requires_grad_(False)
+    model.conv_block3.BN5.requires_grad_(False) 
+    model.conv_block3.Conv6.requires_grad_(True)
+    model.conv_block3.Relu6.requires_grad_(True)
+    model.conv_block3.BN6.requires_grad_(True)
+    model.fc1.requires_grad_(True)
     for batch, (X, y) in enumerate(dataloader):
         if swap:
             for i in range(len(y)):
