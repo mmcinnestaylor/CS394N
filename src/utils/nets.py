@@ -30,6 +30,7 @@ class LinearFashionMNIST_alt(nn.Module):
 
   def forward(self, x):
     x = self.flatten(x)
+    #x = torch.flatten(x)
     return self.output_layer(self.input_layer(x))
 
 
